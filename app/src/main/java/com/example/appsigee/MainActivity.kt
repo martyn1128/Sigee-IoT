@@ -4,11 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
-import com.example.appsigee.ui.screens.dispositivos.DispositivosScreen // Importante: Importa tu pantalla
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.appsigee.ui.screens.dispositivos.DispositivosScreen
+import com.example.appsigee.ui.screens.dispositivos.NuevoDispositivoScreen
 import com.example.appsigee.ui.theme.AppSigeeTheme
 
 class MainActivity : ComponentActivity() {
@@ -16,10 +16,24 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            // Aplicamos el tema personalizado de tu app (donde están tus colores de SIGEE)
             AppSigeeTheme {
-                // Ya no necesitamos el Scaffold aquí porque DispositivosScreen ya tiene su propio Scaffold
-                DispositivosScreen()
+                val navController = rememberNavController()
+                
+                NavHost(
+                    navController = navController,
+                    startDestination = "dispositivos"
+                ) {
+                    composable("dispositivos") {
+                        DispositivosScreen(
+                            onNuevoClick = { navController.navigate("nuevo_dispositivo") }
+                        )
+                    }
+                    composable("nuevo_dispositivo") {
+                        NuevoDispositivoScreen(
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                }
             }
         }
     }

@@ -18,7 +18,10 @@ import com.example.appsigee.domain.model.SeccionHabitacion
 // Importa CardDispositivo
 import com.example.appsigee.ui.screens.dispositivos.CardDispositivo
 @Composable
-fun FilaHabitacion(seccion: SeccionHabitacion) {
+fun FilaHabitacion(
+    seccion: SeccionHabitacion,
+    onNuevoClick: () -> Unit = {}
+) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
 
         // CABECERA (Nombre sala + editar + flecha)
@@ -58,7 +61,14 @@ fun FilaHabitacion(seccion: SeccionHabitacion) {
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(seccion.dispositivos) { dispositivo ->
-                CardDispositivo(dispositivo = dispositivo)
+                CardDispositivo(
+                    dispositivo = dispositivo,
+                    onClick = {
+                        if (dispositivo.esBotonNuevo) {
+                            onNuevoClick()
+                        }
+                    }
+                )
             }
         }
     }
