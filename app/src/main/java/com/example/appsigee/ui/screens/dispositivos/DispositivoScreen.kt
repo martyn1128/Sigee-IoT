@@ -3,8 +3,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Devices
+import androidx.compose.material.icons.outlined.ElectricBolt
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -21,6 +27,11 @@ import com.example.appsigee.data.repository.DispositivoRepository
 import com.example.appsigee.ui.screens.components.FilaHabitacion
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 import com.example.appsigee.ui.viewmodel.DispositivosViewModelFactory
+
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,38 +54,41 @@ fun DispositivosScreen(onNuevoClick: () -> Unit = {}) {
             )
         },
         bottomBar = {
-            // Aquí iría tu barra de navegación (Paso 4)
-            NavigationBar {
-                NavigationBarItem(
-                    selected = true,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Saldo") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Config") },
-                    label = { Text("Dispositivos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Config") },
-                    label = { Text("Recibos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Config") },
-                    label = { Text("Reportes") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Config") },
-                    label = { Text("Ubicanos") }
-                )
+            val items = listOf("Saldo", "Dispositivos", "Recibos", "Reportes", "Ubícanos")
+            val icons = listOf(
+                Icons.Outlined.Home,
+                Icons.Outlined.Devices,
+                Icons.Outlined.ReceiptLong,
+                Icons.Outlined.ElectricBolt,
+                Icons.Outlined.LocationOn
+            )
+
+            var selectedItem by remember { mutableStateOf(1) } // 1 es "Dispositivos" según tu imagen
+
+            NavigationBar(
+                containerColor = Color.White, // Fondo blanco como en la imagen
+                tonalElevation = 8.dp
+            ) {
+                items.forEachIndexed { index, item ->
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                imageVector = icons[index],
+                                contentDescription = item
+                            )
+                        },
+                        label = { Text(text = item) },
+                        selected = selectedItem == index,
+                        onClick = { selectedItem = index },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color(0xFF4CAF50), // Verde de la imagen
+                            selectedTextColor = Color(0xFF4CAF50),
+                            unselectedIconColor = Color.Gray,
+                            unselectedTextColor = Color.Gray,
+                            indicatorColor = Color.Transparent // Elimina el círculo de fondo al seleccionar
+                        )
+                    )
+                }
             }
         }
     ) { innerPadding ->
