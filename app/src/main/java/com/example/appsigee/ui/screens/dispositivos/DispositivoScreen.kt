@@ -3,9 +3,18 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Devices
+import androidx.compose.material.icons.outlined.ElectricBolt
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
@@ -19,9 +28,14 @@ import com.example.appsigee.ui.screens.components.FilaHabitacion
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 import com.example.appsigee.ui.viewmodel.DispositivosViewModelFactory
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.dp
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DispositivosScreen(onNuevoClick: (String, String, String) -> Unit = { _, _, _ -> }) {
+fun DispositivosScreen(onNuevoClick: () -> Unit = {}) {
     val context = LocalContext.current
     val app = context.applicationContext as SigeeApplication
     val repository = DispositivoRepository(app.database.dispositivoDao())
@@ -30,41 +44,6 @@ fun DispositivosScreen(onNuevoClick: (String, String, String) -> Unit = { _, _, 
 
     // Obtenemos el estado del ViewModel
     val habitaciones by viewModel.habitaciones.collectAsState()
-
-    // Estado para el diálogo de edición de grupo
-    var showEditDialog by remember { mutableStateOf(false) }
-    var grupoAEditarId by remember { mutableStateOf("") }
-    var nuevoNombreGrupo by remember { mutableStateOf("") }
-
-    if (showEditDialog) {
-        AlertDialog(
-            onDismissRequest = { showEditDialog = false },
-            title = { Text("Editar nombre del grupo") },
-            text = {
-                TextField(
-                    value = nuevoNombreGrupo,
-                    onValueChange = { nuevoNombreGrupo = it },
-                    label = { Text("Nuevo nombre") },
-                    singleLine = true
-                )
-            },
-            confirmButton = {
-                Button(onClick = {
-                    if (nuevoNombreGrupo.isNotBlank()) {
-                        viewModel.updateGrupoNombre(grupoAEditarId, nuevoNombreGrupo)
-                        showEditDialog = false
-                    }
-                }) {
-                    Text("Guardar")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEditDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
 
     Scaffold(
         topBar = {
@@ -75,38 +54,41 @@ fun DispositivosScreen(onNuevoClick: (String, String, String) -> Unit = { _, _, 
             )
         },
         bottomBar = {
-            // Aquí iría tu barra de navegación (Paso 4)
-            NavigationBar {
-                NavigationBarItem(
-                    selected = true,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Inicio") },
-                    label = { Text("Saldo") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.Devices, contentDescription = "Config") },
-                    label = { Text("Dispositivos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.Receipt, contentDescription = "Recibos") },
-                    label = { Text("Recibos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.BarChart, contentDescription = "Reportes") },
-                    label = { Text("Reportes") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { },
-                    icon = { Icon(Icons.Default.Place, contentDescription = "Ubicanos") },
-                    label = { Text("Ubicanos") }
-                )
+            val items = listOf("Saldo", "Dispositivos", "Recibos", "Reportes", "Ubícanos")
+            val icons = listOf(
+                Icons.Outlined.Home,
+                Icons.Outlined.Devices,
+                Icons.Outlined.ReceiptLong,
+                Icons.Outlined.ElectricBolt,
+                Icons.Outlined.LocationOn
+            )
+
+            var selectedItem by remember { mutableStateOf(1) } // 1 es "Dispositivos" según tu imagen
+
+            NavigationBar(
+                containerColor = Color.White, // Fondo blanco como en la imagen
+                tonalElevation = 8.dp
+            ) {
+                items.forEachIndexed { index, item ->
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                imageVector = icons[index],
+                                contentDescription = item
+                            )
+                        },
+                        label = { Text(text = item) },
+                        selected = selectedItem == index,
+                        onClick = { selectedItem = index },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color(0xFF4CAF50), // Verde de la imagen
+                            selectedTextColor = Color(0xFF4CAF50),
+                            unselectedIconColor = Color.Gray,
+                            unselectedTextColor = Color.Gray,
+                            indicatorColor = Color.Transparent // Elimina el círculo de fondo al seleccionar
+                        )
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -120,12 +102,7 @@ fun DispositivosScreen(onNuevoClick: (String, String, String) -> Unit = { _, _, 
             items(habitaciones) { habitacion ->
                 FilaHabitacion(
                     seccion = habitacion,
-                    onNuevoClick = onNuevoClick,
-                    onEditGrupoClick = { id, nombre ->
-                        grupoAEditarId = id
-                        nuevoNombreGrupo = nombre
-                        showEditDialog = true
-                    }
+                    onNuevoClick = onNuevoClick
                 )
             }
         }
