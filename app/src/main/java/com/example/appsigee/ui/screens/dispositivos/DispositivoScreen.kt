@@ -40,7 +40,10 @@ import androidx.compose.material3.TextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DispositivosScreen(onNuevoClick: (String, String, String) -> Unit = { _, _, _ -> }) {
+fun DispositivosScreen(
+    onNuevoClick: (String, String, String) -> Unit = { _, _, _ -> },
+    onDispositivoClick: (String) -> Unit = {}
+) {
     val context = LocalContext.current
     val app = context.applicationContext as SigeeApplication
     val repository = DispositivoRepository(app.database.dispositivoDao())
@@ -57,6 +60,7 @@ fun DispositivosScreen(onNuevoClick: (String, String, String) -> Unit = { _, _, 
     var newGroupName by remember { mutableStateOf("") }
 
     if (showEditDialog) {
+
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
             title = { Text("Editar nombre del grupo") },
@@ -151,6 +155,7 @@ fun DispositivosScreen(onNuevoClick: (String, String, String) -> Unit = { _, _, 
                 FilaHabitacion(
                     seccion = habitacion,
                     onNuevoClick = onNuevoClick,
+                    onDispositivoClick = onDispositivoClick,
                     onEditGrupoClick = { id, nombre ->
                         groupToEditId = id
                         groupToEditName = nombre

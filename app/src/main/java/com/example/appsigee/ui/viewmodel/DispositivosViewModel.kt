@@ -74,4 +74,30 @@ class DispositivosViewModel(
             }
         }
     }
+
+    fun getDispositivoById(id: String): Flow<com.example.appsigee.domain.model.Dispositivo?> {
+        return repository.getDispositivoById(id)
+    }
+
+    fun toggleDispositivoEstado(dispositivo: com.example.appsigee.domain.model.Dispositivo) {
+        viewModelScope.launch {
+            // Obtenemos el grupoId actual para el update
+            // En una implementación real, el Dispositivo podría tener el id_grupo
+            // Por ahora, buscamos en qué habitación está
+            val grupoId = _habitaciones.value.find { h -> 
+                h.dispositivos.any { d -> d.id == dispositivo.id } 
+            }?.id_grupo ?: ""
+
+            val updatedEntity = com.example.appsigee.data.local.entity.DispositivoEntity(
+                id_dispositivo = dispositivo.id,
+                nombre = dispositivo.nombre,
+                tipo = dispositivo.tipo.name,
+                estado = !dispositivo.estado,
+                consumo_actual = dispositivo.consumoKwh.toDouble(),
+                id_gateway = null,
+                id_grupo = grupoId
+            )
+            repository.update(updatedEntity)
+        }
+    }
 }

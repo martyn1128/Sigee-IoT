@@ -22,6 +22,7 @@ import com.example.appsigee.ui.screens.dispositivos.CardDispositivo
 fun FilaHabitacion(
     seccion: SeccionHabitacion,
     onNuevoClick: (String, String, String) -> Unit = { _, _, _ -> },
+    onDispositivoClick: (String) -> Unit = {},
     onEditGrupoClick: (String, String) -> Unit = { _, _ -> }
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
@@ -71,6 +72,8 @@ fun FilaHabitacion(
                     onClick = {
                         if (dispositivo.esBotonNuevo) {
                             onNuevoClick(dispositivo.id, seccion.nombre, seccion.id_grupo)
+                        } else {
+                            onDispositivoClick(dispositivo.id)
                         }
                     }
                 )

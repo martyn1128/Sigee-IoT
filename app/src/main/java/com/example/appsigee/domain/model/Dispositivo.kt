@@ -8,7 +8,8 @@ data class Dispositivo(
     val costoSemanas: Double, // Ejemplo: 30.43
     val consumoKwh: Int,      // Ejemplo: 23
     val estaEnAlerta: Boolean = false, // Para pintar el borde rojo (ej. Refrigerador)
-    val esBotonNuevo: Boolean = false  // Para el botón de "+"
+    val esBotonNuevo: Boolean = false,  // Para el botón de "+"
+    val estado: Boolean = true
 )
 
 enum class TipoDispositivo {

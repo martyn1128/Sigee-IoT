@@ -19,6 +19,10 @@ class DispositivoRepository(private val dispositivoDao: DispositivoDao) {
         }
     }
 
+    fun getDispositivoById(id: String): Flow<Dispositivo?> {
+        return dispositivoDao.getDispositivoById(id).map { it?.toDomain() }
+    }
+
     suspend fun insert(dispositivo: Dispositivo, grupoId: String) {
         dispositivoDao.insertDispositivo(dispositivo.toEntity(grupoId))
     }
@@ -35,7 +39,8 @@ class DispositivoRepository(private val dispositivoDao: DispositivoDao) {
             costoSemanas = 0.0, // Estos datos podrían venir de otras tablas (Consumo) en una implementación completa
             consumoKwh = consumo_actual.toInt(),
             estaEnAlerta = false, // Podría venir de la tabla Alertas
-            esBotonNuevo = (tipo == TipoDispositivo.NUEVO.name)
+            esBotonNuevo = (tipo == TipoDispositivo.NUEVO.name),
+            estado = estado
         )
     }
 
@@ -44,7 +49,7 @@ class DispositivoRepository(private val dispositivoDao: DispositivoDao) {
             id_dispositivo = id,
             nombre = nombre,
             tipo = tipo.name,
-            estado = true, // Valor por defecto
+            estado = estado,
             consumo_actual = consumoKwh.toDouble(),
             id_gateway = null,
             id_grupo = grupoId

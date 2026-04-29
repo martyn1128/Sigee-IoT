@@ -22,5 +22,5 @@ interface DispositivoDao {
     suspend fun deleteDispositivo(dispositivo: DispositivoEntity)
 
     @Query("SELECT * FROM dispositivos WHERE id_dispositivo = :id")
-    suspend fun getDispositivoById(id: String): DispositivoEntity?
+    fun getDispositivoById(id: String): Flow<DispositivoEntity?>
 }
