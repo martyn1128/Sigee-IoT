@@ -22,6 +22,9 @@ class DispositivoRepository(private val dispositivoDao: DispositivoDao) {
     suspend fun insert(dispositivo: Dispositivo, grupoId: String) {
         dispositivoDao.insertDispositivo(dispositivo.toEntity(grupoId))
     }
+    suspend fun update(dispositivo: DispositivoEntity) {
+        dispositivoDao.updateDispositivo(dispositivo)
+    }
 
     // Mappers
     private fun DispositivoEntity.toDomain(): Dispositivo {

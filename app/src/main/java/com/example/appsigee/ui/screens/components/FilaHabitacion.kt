@@ -1,4 +1,5 @@
 package com.example.appsigee.ui.screens.components// ui/screens/dispositivos/components/FilaHabitacion.kt
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -20,7 +21,8 @@ import com.example.appsigee.ui.screens.dispositivos.CardDispositivo
 @Composable
 fun FilaHabitacion(
     seccion: SeccionHabitacion,
-    onNuevoClick: () -> Unit = {}
+    onNuevoClick: (String, String, String) -> Unit = { _, _, _ -> },
+    onEditGrupoClick: (String, String) -> Unit = { _, _ -> }
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
 
@@ -30,7 +32,10 @@ fun FilaHabitacion(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { onEditGrupoClick(seccion.id_grupo, seccion.nombre) }
+            ) {
                 Text(text = seccion.nombre, fontSize = 20.sp, color = Color.Black)
                 Spacer(modifier = Modifier.width(4.dp))
                 // Icono editar (Necesitas el vector)
@@ -65,7 +70,7 @@ fun FilaHabitacion(
                     dispositivo = dispositivo,
                     onClick = {
                         if (dispositivo.esBotonNuevo) {
-                            onNuevoClick()
+                            onNuevoClick(dispositivo.id, seccion.nombre, seccion.id_grupo)
                         }
                     }
                 )

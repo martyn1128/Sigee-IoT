@@ -11,4 +11,10 @@ interface GrupoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertGrupo(grupo: GrupoEntity)
+
+    @Update
+    suspend fun updateGrupo(grupo: GrupoEntity)
+
+    @Query("SELECT * FROM grupos WHERE id_grupo = :id LIMIT 1")
+    suspend fun getGrupoById(id: String): GrupoEntity?
 }

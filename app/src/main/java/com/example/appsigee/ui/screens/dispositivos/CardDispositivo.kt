@@ -4,13 +4,13 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.example.appsigee.R
 // Importa tu modelo Dispositivo
 import com.example.appsigee.domain.model.Dispositivo
+import com.example.appsigee.domain.model.TipoDispositivo
 
 @Composable
 fun CardDispositivo(
@@ -52,13 +53,12 @@ fun CardDispositivo(
                     tint = Color.Black
                 )
             } else {
-                // Imagen real (Necesitarás un mapeo de TipoDispositivo -> ResourceID)
-                // Por ahora, usa un placeholder
-                Image(
-                    // Agregamos "android." antes de la R
-                    painter = painterResource(id = android.R.drawable.ic_menu_report_image),
+                // Mapeo de TipoDispositivo a Icono de Material
+                Icon(
+                    imageVector = getIconForTipo(dispositivo.tipo),
                     contentDescription = dispositivo.nombre,
-                    modifier = Modifier.size(70.dp)
+                    modifier = Modifier.size(70.dp).padding(8.dp),
+                    tint = Color.Gray
                 )
             }
 
@@ -92,5 +92,18 @@ fun CardDispositivo(
                 )
             }
         }
+    }
+}
+
+fun getIconForTipo(tipo: TipoDispositivo): ImageVector {
+    return when (tipo) {
+        TipoDispositivo.TELEVISION -> Icons.Default.Tv
+        TipoDispositivo.CONSOLA -> Icons.Default.VideogameAsset
+        TipoDispositivo.FOCO -> Icons.Default.Lightbulb
+        TipoDispositivo.REFRIGERADOR -> Icons.Default.Kitchen
+        TipoDispositivo.MICROONDAS -> Icons.Default.Microwave
+        TipoDispositivo.LAPTOP -> Icons.Default.Laptop
+        TipoDispositivo.CELULAR -> Icons.Default.Smartphone
+        else -> Icons.Default.Devices
     }
 }

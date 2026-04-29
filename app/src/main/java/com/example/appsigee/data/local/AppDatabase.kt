@@ -72,11 +72,18 @@ abstract class AppDatabase : RoomDatabase() {
                 grupoDao.insertGrupo(GrupoEntity(salaId, "Sala", uId))
                 dispositivoDao.insertDispositivo(DispositivoEntity("d1", "Televisión", "TELEVISION", true, 23.0, null, salaId))
                 dispositivoDao.insertDispositivo(DispositivoEntity("d2", "Nintendo", "CONSOLA", true, 15.0, null, salaId))
+                dispositivoDao.insertDispositivo(DispositivoEntity("d3", "Nuevo Dispositivo", "NUEVO", true, 0.0, null, salaId))
 
                 val cocinaId = "g2"
                 grupoDao.insertGrupo(GrupoEntity(cocinaId, "Cocina", uId))
-                dispositivoDao.insertDispositivo(DispositivoEntity("d3", "Refrigerador", "REFRIGERADOR", true, 91.0, null, cocinaId))
-                dispositivoDao.insertDispositivo(DispositivoEntity("d4", "Microondas", "MICROONDAS", true, 38.0, null, cocinaId))
+                dispositivoDao.insertDispositivo(DispositivoEntity("d4", "Refrigerador", "REFRIGERADOR", true, 91.0, null, cocinaId))
+                dispositivoDao.insertDispositivo(DispositivoEntity("d5", "Microondas", "MICROONDAS", true, 38.0, null, cocinaId))
+                dispositivoDao.insertDispositivo(DispositivoEntity("d6", "Nuevo Dispositivo", "NUEVO", true, 0.0, null, cocinaId))
+
+                val juanId = "g3"
+                grupoDao.insertGrupo(GrupoEntity(juanId, "Habitación Juan", uId))
+                dispositivoDao.insertDispositivo(DispositivoEntity("d7", "Laptop", "COMPUTADORA", true, 45.0, null, juanId))
+                dispositivoDao.insertDispositivo(DispositivoEntity("d8", "Nuevo Dispositivo", "NUEVO", true, 0.0, null, juanId))
             }
         }
     }
