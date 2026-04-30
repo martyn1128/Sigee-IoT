@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appsigee.domain.model.Dispositivo
 import com.example.appsigee.domain.model.TipoDispositivo
+import com.example.appsigee.ui.screens.components.BottomNavBar
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,10 +32,14 @@ fun ControlDispositivoScreen(
     onBack: () -> Unit,
     onAlertasClick: () -> Unit,
     onConfigClick: () -> Unit,
+    onHistorialClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onNavigate: (String) -> Unit,
     viewModel: DispositivosViewModel
 ) {
     // Cargamos el dispositivo desde el ViewModel
-    val dispositivo by viewModel.getDispositivoById(idDispositivo).collectAsState(initial = null)
+    val dispositivoFlow = remember(idDispositivo) { viewModel.getDispositivoById(idDispositivo) }
+    val dispositivo by dispositivoFlow.collectAsState(initial = null)
 
     Scaffold(
         topBar = {
@@ -58,32 +63,7 @@ fun ControlDispositivoScreen(
             )
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = Color.White,
-                tonalElevation = 8.dp
-            ) {
-                val items = listOf("Saldo", "Dispositivos", "Recibos", "Reportes", "Ubícanos")
-                val icons = listOf(
-                    Icons.Default.Home,
-                    Icons.Default.Devices,
-                    Icons.Default.ReceiptLong,
-                    Icons.Default.ElectricBolt,
-                    Icons.Default.LocationOn
-                )
-                items.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        icon = { Icon(icons[index], contentDescription = item) },
-                        label = { Text(item) },
-                        selected = index == 1,
-                        onClick = { /* Navegar */ },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color(0xFF4CAF50),
-                            selectedTextColor = Color(0xFF4CAF50),
-                            indicatorColor = Color.Transparent
-                        )
-                    )
-                }
-            }
+            BottomNavBar(currentRoute = "dispositivos", onNavigate = onNavigate)
         }
     ) { innerPadding ->
         Column(
@@ -106,7 +86,9 @@ fun ControlDispositivoScreen(
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Editar",
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier
+                        .size(18.dp)
+                        .clickable { onEditClick() },
                     tint = Color.Gray
                 )
             }
@@ -136,7 +118,8 @@ fun ControlDispositivoScreen(
                 label = "Consumo energético actual:",
                 value = "${dispositivo?.consumoKwh ?: 0} kWh",
                 valueColor = Color(0xFF4CAF50),
-                showArrow = true
+                showArrow = true,
+                onClick = onHistorialClick
             )
 
             MetricRow(
@@ -191,7 +174,7 @@ fun ControlDispositivoScreen(
             // Menú de opciones
             MenuItem(icon = Icons.Default.Notifications, label = "Alertas de consumo", onClick = onAlertasClick)
             MenuItem(icon = Icons.Default.Settings, label = "Configuración de consumo máximo", onClick = onConfigClick)
-            MenuItem(icon = Icons.Outlined.History, label = "Historial de consumo", onClick = { /* Historial */ })
+            MenuItem(icon = Icons.Outlined.History, label = "Historial de consumo", onClick = onHistorialClick)
         }
     }
 }
@@ -202,11 +185,13 @@ fun MetricRow(
     label: String,
     value: String,
     valueColor: Color,
-    showArrow: Boolean = false
+    showArrow: Boolean = false,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(enabled = showArrow) { onClick() }
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

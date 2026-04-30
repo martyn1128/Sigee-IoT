@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.appsigee.SigeeApplication
 import com.example.appsigee.data.repository.DispositivoRepository
 import com.example.appsigee.ui.screens.components.FilaHabitacion
+import com.example.appsigee.ui.screens.components.BottomNavBar
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 import com.example.appsigee.ui.viewmodel.DispositivosViewModelFactory
 
@@ -42,12 +43,13 @@ import androidx.compose.material3.TextField
 @Composable
 fun DispositivosScreen(
     onNuevoClick: (String, String, String) -> Unit = { _, _, _ -> },
-    onDispositivoClick: (String) -> Unit = {}
+    onDispositivoClick: (String) -> Unit = {},
+    onNavigate: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as SigeeApplication
     val repository = DispositivoRepository(app.database.dispositivoDao())
-    val factory = DispositivosViewModelFactory(repository, app.database.grupoDao())
+    val factory = DispositivosViewModelFactory(repository, app.database.grupoDao(), app.database.configuracionConsumoDao())
     val viewModel: DispositivosViewModel = viewModel(factory = factory)
 
     // Obtenemos el estado del ViewModel
@@ -106,42 +108,7 @@ fun DispositivosScreen(
             )
         },
         bottomBar = {
-            val items = listOf("Saldo", "Dispositivos", "Recibos", "Reportes", "Ubícanos")
-            val icons = listOf(
-                Icons.Outlined.Home,
-                Icons.Outlined.Devices,
-                Icons.Outlined.ReceiptLong,
-                Icons.Outlined.ElectricBolt,
-                Icons.Outlined.LocationOn
-            )
-
-            var selectedItem by remember { mutableStateOf(1) } // 1 es "Dispositivos" según tu imagen
-
-            NavigationBar(
-                containerColor = Color.White, // Fondo blanco como en la imagen
-                tonalElevation = 8.dp
-            ) {
-                items.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = icons[index],
-                                contentDescription = item
-                            )
-                        },
-                        label = { Text(text = item) },
-                        selected = selectedItem == index,
-                        onClick = { selectedItem = index },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color(0xFF4CAF50), // Verde de la imagen
-                            selectedTextColor = Color(0xFF4CAF50),
-                            unselectedIconColor = Color.Gray,
-                            unselectedTextColor = Color.Gray,
-                            indicatorColor = Color.Transparent // Elimina el círculo de fondo al seleccionar
-                        )
-                    )
-                }
-            }
+            BottomNavBar(currentRoute = "dispositivos", onNavigate = onNavigate)
         }
     ) { innerPadding ->
 

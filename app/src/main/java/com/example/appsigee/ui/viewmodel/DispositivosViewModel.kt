@@ -2,7 +2,9 @@ package com.example.appsigee.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.appsigee.data.local.dao.ConfiguracionConsumoDao
 import com.example.appsigee.data.local.dao.GrupoDao
+import com.example.appsigee.data.local.entity.ConfiguracionConsumoEntity
 import com.example.appsigee.data.repository.DispositivoRepository
 import com.example.appsigee.domain.model.SeccionHabitacion
 import kotlinx.coroutines.flow.*
@@ -11,7 +13,8 @@ import kotlinx.coroutines.launch
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class DispositivosViewModel(
     private val repository: DispositivoRepository,
-    private val grupoDao: GrupoDao
+    private val grupoDao: GrupoDao,
+    private val configuracionDao: ConfiguracionConsumoDao
 ) : ViewModel() {
 
     private val _habitaciones = MutableStateFlow<List<SeccionHabitacion>>(emptyList())
@@ -62,7 +65,19 @@ class DispositivosViewModel(
 
     fun updateDispositivo(id: String, nombre: String, grupoId: String, tipo: String) {
         viewModelScope.launch {
-            // repository.updateDispositivo(id, nombre, grupoId, tipo)
+            val dispositivoActual = repository.getDispositivoById(id).firstOrNull()
+            dispositivoActual?.let {
+                val updatedEntity = com.example.appsigee.data.local.entity.DispositivoEntity(
+                    id_dispositivo = id,
+                    nombre = nombre,
+                    tipo = tipo,
+                    estado = it.estado,
+                    consumo_actual = it.consumoKwh.toDouble(),
+                    id_gateway = null,
+                    id_grupo = grupoId
+                )
+                repository.update(updatedEntity)
+            }
         }
     }
 
@@ -98,6 +113,27 @@ class DispositivosViewModel(
                 id_grupo = grupoId
             )
             repository.update(updatedEntity)
+        }
+    }
+
+    fun getConfiguracion(idDispositivo: String) = configuracionDao.getConfiguracionByDispositivo(idDispositivo)
+
+    fun saveConfiguracion(idDispositivo: String, limite: Double, tiempo: Long, auto: Boolean) {
+        viewModelScope.launch {
+            val config = ConfiguracionConsumoEntity(
+                id_config = idDispositivo, // ID de config igual a ID de dispositivo
+                limite_kwh = limite,
+                tiempo_maximo = tiempo,
+                apagado_auto = auto,
+                id_dispositivo = idDispositivo
+            )
+            configuracionDao.insertOrUpdateConfiguracion(config)
+        }
+    }
+
+    fun deleteConfiguracion(idDispositivo: String) {
+        viewModelScope.launch {
+            configuracionDao.deleteConfiguracionByDispositivo(idDispositivo)
         }
     }
 }

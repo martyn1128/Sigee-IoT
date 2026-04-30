@@ -2,6 +2,7 @@ package com.example.appsigee.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.example.appsigee.data.local.dao.ConfiguracionConsumoDao
 import com.example.appsigee.data.local.dao.DispositivoDao
 import com.example.appsigee.data.local.dao.GrupoDao
 import com.example.appsigee.data.local.dao.UsuarioDao
@@ -29,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dispositivoDao(): DispositivoDao
     abstract fun grupoDao(): GrupoDao
     abstract fun usuarioDao(): UsuarioDao
+    abstract fun configuracionConsumoDao(): ConfiguracionConsumoDao
 
     companion object {
         @Volatile

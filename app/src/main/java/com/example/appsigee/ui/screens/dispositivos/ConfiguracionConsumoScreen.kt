@@ -1,23 +1,27 @@
 package com.example.appsigee.ui.screens.dispositivos
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Microwave
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.appsigee.domain.model.TipoDispositivo
+import com.example.appsigee.ui.screens.components.BottomNavBar
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,13 +29,38 @@ import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 fun ConfiguracionConsumoScreen(
     idDispositivo: String,
     onBack: () -> Unit,
+    onNavigate: (String) -> Unit,
     viewModel: DispositivosViewModel
 ) {
-    val dispositivo by viewModel.getDispositivoById(idDispositivo).collectAsState(initial = null)
+    val dispositivoFlow = remember(idDispositivo) { viewModel.getDispositivoById(idDispositivo) }
+    val dispositivo by dispositivoFlow.collectAsState(initial = null)
     
-    var limiteKwh by remember { mutableStateOf("10") }
-    var tiempoMaximo by remember { mutableStateOf("6") }
-    var apagarAuto by remember { mutableStateOf(true) }
+    val configuracionFlow = remember(idDispositivo) { viewModel.getConfiguracion(idDispositivo) }
+    val configuracion by configuracionFlow.collectAsState(initial = null)
+    
+    val habitaciones by viewModel.habitaciones.collectAsState()
+    
+    val habitacionNombre = remember(habitaciones, dispositivo) {
+        habitaciones.find { h -> h.dispositivos.any { d -> d.id == idDispositivo } }?.nombre ?: ""
+    }
+    
+    var limiteKwh by remember { mutableStateOf("") }
+    var tiempoMaximo by remember { mutableStateOf("") }
+    var apagarAuto by remember { mutableStateOf(false) }
+    
+    var isInitialized by remember { mutableStateOf(false) }
+    
+    val focusManager = LocalFocusManager.current
+
+    // Sincronizar estados locales con los datos de la BD al cargar (SOLO LA PRIMERA VEZ)
+    LaunchedEffect(configuracion) {
+        if (configuracion != null && !isInitialized) {
+            limiteKwh = configuracion!!.limite_kwh.toString()
+            tiempoMaximo = configuracion!!.tiempo_maximo.toString()
+            apagarAuto = configuracion!!.apagado_auto
+            isInitialized = true
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -43,8 +72,21 @@ fun ConfiguracionConsumoScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
+                },
+                actions = {
+                    if (configuracion != null) {
+                        IconButton(onClick = { 
+                            viewModel.deleteConfiguracion(idDispositivo)
+                            onBack()
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
+                        }
+                    }
                 }
             )
+        },
+        bottomBar = {
+            BottomNavBar(currentRoute = "dispositivos", onNavigate = onNavigate)
         }
     ) { innerPadding ->
         Column(
@@ -55,7 +97,7 @@ fun ConfiguracionConsumoScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "${dispositivo?.nombre ?: "Microondas"} - Cocina",
+                text = "${dispositivo?.nombre ?: ""} - $habitacionNombre",
                 color = Color(0xFF2E7D32),
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
@@ -63,9 +105,9 @@ fun ConfiguracionConsumoScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Imagen del dispositivo (Placeholder: Microondas)
+            // Imagen del dispositivo
             Icon(
-                imageVector = Icons.Default.Microwave,
+                imageVector = getIconForTipo(dispositivo?.tipo ?: TipoDispositivo.MICROONDAS),
                 contentDescription = null,
                 modifier = Modifier.size(120.dp),
                 tint = Color.LightGray
@@ -92,7 +134,15 @@ fun ConfiguracionConsumoScreen(
                             unfocusedIndicatorColor = Color.Transparent,
                         ),
                         shape = RoundedCornerShape(28.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { focusManager.clearFocus() }
+                        ),
+                        singleLine = true,
+                        placeholder = { Text("0.0") }
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text("kWh", fontWeight = FontWeight.Bold)
@@ -120,7 +170,15 @@ fun ConfiguracionConsumoScreen(
                             unfocusedIndicatorColor = Color.Transparent,
                         ),
                         shape = RoundedCornerShape(28.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { focusManager.clearFocus() }
+                        ),
+                        singleLine = true,
+                        placeholder = { Text("0") }
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text("Horas", fontWeight = FontWeight.Bold)
@@ -149,7 +207,12 @@ fun ConfiguracionConsumoScreen(
             
             // Botón Guardar
             Button(
-                onClick = { onBack() },
+                onClick = { 
+                    val limite = limiteKwh.toDoubleOrNull() ?: 0.0
+                    val tiempo = tiempoMaximo.toLongOrNull() ?: 0L
+                    viewModel.saveConfiguracion(idDispositivo, limite, tiempo, apagarAuto)
+                    onBack()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

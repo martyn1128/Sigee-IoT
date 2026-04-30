@@ -17,11 +17,17 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appsigee.data.local.entity.DispositivoEntity
 import com.example.appsigee.data.repository.DispositivoRepository
+import com.example.appsigee.ui.screens.dispositivos.ActualizarDispositivoScreen
 import com.example.appsigee.ui.screens.dispositivos.AlertasScreen
 import com.example.appsigee.ui.screens.dispositivos.ConfiguracionConsumoScreen
 import com.example.appsigee.ui.screens.dispositivos.ControlDispositivoScreen
+import com.example.appsigee.ui.screens.dispositivos.HistorialConsumoScreen
 import com.example.appsigee.ui.screens.dispositivos.DispositivosScreen
 import com.example.appsigee.ui.screens.dispositivos.NuevoDispositivoScreen
+import com.example.appsigee.ui.screens.recibos.RecibosScreen
+import com.example.appsigee.ui.screens.reportes.ReportesScreen
+import com.example.appsigee.ui.screens.saldo.SaldoScreen
+import com.example.appsigee.ui.screens.ubicanos.UbicanosScreen
 import com.example.appsigee.ui.theme.AppSigeeTheme
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 import com.example.appsigee.ui.viewmodel.DispositivosViewModelFactory
@@ -41,15 +47,20 @@ class MainActivity : ComponentActivity() {
 
                 // Necesitamos el repositorio para hacer el UPDATE
                 val repository = DispositivoRepository(app.database.dispositivoDao())
-                val factory = DispositivosViewModelFactory(repository, app.database.grupoDao())
+                val factory = DispositivosViewModelFactory(repository, app.database.grupoDao(), app.database.configuracionConsumoDao())
                 val viewModel: DispositivosViewModel = viewModel(factory = factory)
                 val listaGrupos by viewModel.grupos.collectAsState()
 
                 NavHost(
                     navController = navController,
-                    startDestination = "dispositivos"
+                    startDestination = "saldo"
                 ) {
-                    // Pantalla Principal
+                    // Pantalla de Saldo (Principal)
+                    composable("saldo") {
+                        SaldoScreen(onNavigate = { route -> navController.navigate(route) })
+                    }
+
+                    // Pantalla Principal de Dispositivos
                     composable("dispositivos") {
                         DispositivosScreen(
                             onNuevoClick = { id, grupoNombre, grupoId ->
@@ -57,8 +68,24 @@ class MainActivity : ComponentActivity() {
                             },
                             onDispositivoClick = { id ->
                                 navController.navigate("control_dispositivo/$id")
-                            }
+                            },
+                            onNavigate = { route -> navController.navigate(route) }
                         )
+                    }
+
+                    // Pantalla de Recibos
+                    composable("recibos") {
+                        RecibosScreen(onNavigate = { route -> navController.navigate(route) })
+                    }
+
+                    // Pantalla de Reportes
+                    composable("reportes") {
+                        ReportesScreen(onNavigate = { route -> navController.navigate(route) })
+                    }
+
+                    // Pantalla de Ubícanos
+                    composable("ubicanos") {
+                        UbicanosScreen(onNavigate = { route -> navController.navigate(route) })
                     }
 
                     // Pantalla de Control de Dispositivo
@@ -72,6 +99,37 @@ class MainActivity : ComponentActivity() {
                             onBack = { navController.popBackStack() },
                             onAlertasClick = { navController.navigate("alertas_dispositivo/$id") },
                             onConfigClick = { navController.navigate("config_consumo/$id") },
+                            onHistorialClick = { navController.navigate("historial_consumo/$id") },
+                            onEditClick = { navController.navigate("actualizar_dispositivo/$id") },
+                            onNavigate = { route -> navController.navigate(route) },
+                            viewModel = viewModel
+                        )
+                    }
+
+                    // Pantalla de Actualizar Dispositivo
+                    composable(
+                        route = "actualizar_dispositivo/{id}",
+                        arguments = listOf(navArgument("id") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getString("id") ?: ""
+                        ActualizarDispositivoScreen(
+                            idDispositivo = id,
+                            onBack = { navController.popBackStack() },
+                            onNavigate = { route -> navController.navigate(route) },
+                            viewModel = viewModel
+                        )
+                    }
+
+                    // Pantalla de Historial de Consumo
+                    composable(
+                        route = "historial_consumo/{id}",
+                        arguments = listOf(navArgument("id") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getString("id") ?: ""
+                        HistorialConsumoScreen(
+                            idDispositivo = id,
+                            onBack = { navController.popBackStack() },
+                            onNavigate = { route -> navController.navigate(route) },
                             viewModel = viewModel
                         )
                     }
@@ -86,6 +144,7 @@ class MainActivity : ComponentActivity() {
                             idDispositivo = id,
                             onBack = { navController.popBackStack() },
                             onConfigClick = { navController.navigate("config_consumo/$id") },
+                            onNavigate = { route -> navController.navigate(route) },
                             viewModel = viewModel
                         )
                     }
@@ -99,6 +158,7 @@ class MainActivity : ComponentActivity() {
                         ConfiguracionConsumoScreen(
                             idDispositivo = id,
                             onBack = { navController.popBackStack() },
+                            onNavigate = { route -> navController.navigate(route) },
                             viewModel = viewModel
                         )
                     }
@@ -120,6 +180,7 @@ class MainActivity : ComponentActivity() {
                             grupoIdInicial = grupoId,
                             listaGrupos = listaGrupos,
                             onBack = { navController.popBackStack() },
+                            onNavigate = { route -> navController.navigate(route) },
                             onSaveClick = { nuevoNombre, nuevoGrupoId, nuevoTipo ->
                                 // AQUÍ OCURRE EL UPDATE REAL EN LA BASE DE DATOS
                                 scope.launch {

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appsigee.domain.model.AlertaConsumo
+import com.example.appsigee.ui.screens.components.BottomNavBar
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,6 +26,7 @@ fun AlertasScreen(
     idDispositivo: String,
     onBack: () -> Unit,
     onConfigClick: () -> Unit,
+    onNavigate: (String) -> Unit,
     viewModel: DispositivosViewModel
 ) {
     val dispositivo by viewModel.getDispositivoById(idDispositivo).collectAsState(initial = null)
@@ -53,7 +55,9 @@ fun AlertasScreen(
                 }
             )
         },
-        bottomBar = { /* Reutilizar BottomBar si es necesario */ }
+        bottomBar = {
+            BottomNavBar(currentRoute = "dispositivos", onNavigate = onNavigate)
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
