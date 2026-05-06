@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.coil.compose)
     // Para procesar las anotaciones de Room:
     ksp(libs.androidx.room.compiler) // O 'ksp' si ya lo tienes configurado
 }

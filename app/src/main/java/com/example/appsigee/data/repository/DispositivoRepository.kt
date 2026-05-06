@@ -35,11 +35,11 @@ class DispositivoRepository(private val dispositivoDao: DispositivoDao) {
         return Dispositivo(
             id = id_dispositivo,
             nombre = nombre,
-            tipo = try { TipoDispositivo.valueOf(tipo) } catch (e: Exception) { TipoDispositivo.NUEVO },
-            costoSemanas = 0.0, // Estos datos podrían venir de otras tablas (Consumo) en una implementación completa
+            tipo = tipo,
+            costoSemanas = 0.0,
             consumoKwh = consumo_actual.toInt(),
-            estaEnAlerta = false, // Podría venir de la tabla Alertas
-            esBotonNuevo = (tipo == TipoDispositivo.NUEVO.name),
+            estaEnAlerta = false,
+            esBotonNuevo = (tipo == "NUEVO"),
             estado = estado
         )
     }
@@ -48,7 +48,7 @@ class DispositivoRepository(private val dispositivoDao: DispositivoDao) {
         return DispositivoEntity(
             id_dispositivo = id,
             nombre = nombre,
-            tipo = tipo.name,
+            tipo = tipo,
             estado = estado,
             consumo_actual = consumoKwh.toDouble(),
             id_gateway = null,

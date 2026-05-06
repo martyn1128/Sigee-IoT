@@ -11,14 +11,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 // Importa R de tu proyecto
 import com.example.appsigee.R
 // Importa tu modelo Dispositivo
 import com.example.appsigee.domain.model.Dispositivo
 import com.example.appsigee.domain.model.TipoDispositivo
+import com.example.appsigee.ui.utils.getIconForTipo
 
 @Composable
 fun CardDispositivo(
@@ -53,13 +56,22 @@ fun CardDispositivo(
                     tint = Color.Black
                 )
             } else {
-                // Mapeo de TipoDispositivo a Icono de Material
-                Icon(
-                    imageVector = getIconForTipo(dispositivo.tipo),
-                    contentDescription = dispositivo.nombre,
-                    modifier = Modifier.size(70.dp).padding(8.dp),
-                    tint = Color.Gray
-                )
+                if (dispositivo.tipo.startsWith("content://") || dispositivo.tipo.startsWith("file://")) {
+                    AsyncImage(
+                        model = dispositivo.tipo,
+                        contentDescription = dispositivo.nombre,
+                        modifier = Modifier.size(70.dp).padding(8.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Mapeo de TipoDispositivo a Icono de Material
+                    Icon(
+                        imageVector = getIconForTipo(dispositivo.tipo),
+                        contentDescription = dispositivo.nombre,
+                        modifier = Modifier.size(70.dp).padding(8.dp),
+                        tint = Color.Gray
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -92,18 +104,5 @@ fun CardDispositivo(
                 )
             }
         }
-    }
-}
-
-fun getIconForTipo(tipo: TipoDispositivo): ImageVector {
-    return when (tipo) {
-        TipoDispositivo.TELEVISION -> Icons.Default.Tv
-        TipoDispositivo.CONSOLA -> Icons.Default.VideogameAsset
-        TipoDispositivo.FOCO -> Icons.Default.Lightbulb
-        TipoDispositivo.REFRIGERADOR -> Icons.Default.Kitchen
-        TipoDispositivo.MICROONDAS -> Icons.Default.Microwave
-        TipoDispositivo.LAPTOP -> Icons.Default.Laptop
-        TipoDispositivo.CELULAR -> Icons.Default.Smartphone
-        else -> Icons.Default.Devices
     }
 }

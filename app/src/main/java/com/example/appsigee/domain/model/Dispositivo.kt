@@ -1,10 +1,10 @@
 package com.example.appsigee.domain.model
 
-// domain/model/Dispositivo.kt (o simplemente crea una carpeta model si estás empezando)
+// domain/model/Dispositivo.kt
 data class Dispositivo(
     val id: String,
     val nombre: String,
-    val tipo: TipoDispositivo, // Una imagen, icono o ID de recurso
+    val tipo: String, // Puede ser el nombre del enum TipoDispositivo o una URI de imagen
     val costoSemanas: Double, // Ejemplo: 30.43
     val consumoKwh: Int,      // Ejemplo: 23
     val estaEnAlerta: Boolean = false, // Para pintar el borde rojo (ej. Refrigerador)

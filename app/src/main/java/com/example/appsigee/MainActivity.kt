@@ -47,7 +47,12 @@ class MainActivity : ComponentActivity() {
 
                 // Necesitamos el repositorio para hacer el UPDATE
                 val repository = DispositivoRepository(app.database.dispositivoDao())
-                val factory = DispositivosViewModelFactory(repository, app.database.grupoDao(), app.database.configuracionConsumoDao())
+                val factory = DispositivosViewModelFactory(
+                    repository,
+                    app.database.grupoDao(),
+                    app.database.configuracionConsumoDao(),
+                    app.database.alertaDao()
+                )
                 val viewModel: DispositivosViewModel = viewModel(factory = factory)
                 val listaGrupos by viewModel.grupos.collectAsState()
 

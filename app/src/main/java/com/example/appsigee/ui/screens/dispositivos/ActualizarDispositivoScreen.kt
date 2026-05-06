@@ -1,22 +1,31 @@
 package com.example.appsigee.ui.screens.dispositivos
 
-import androidx.compose.foundation.clickable
+import android.net.Uri
+import android.os.Environment
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import com.example.appsigee.data.local.entity.GrupoEntity
 import com.example.appsigee.domain.model.TipoDispositivo
 import com.example.appsigee.ui.screens.components.BottomNavBar
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,18 +42,39 @@ fun ActualizarDispositivoScreen(
     var nombre by remember { mutableStateOf("") }
     var grupoSeleccionado by remember { mutableStateOf<GrupoEntity?>(null) }
     var expandedGrupo by remember { mutableStateOf(false) }
-    var tipoSeleccionado by remember { mutableStateOf(TipoDispositivo.TELEVISION) }
+    var tipoSeleccionado by remember { mutableStateOf(TipoDispositivo.TELEVISION.name) }
     var showImagePicker by remember { mutableStateOf(false) }
 
     var isInitialized by remember { mutableStateOf(false) }
 
-    // Sincronizar con datos actuales
+    val context = LocalContext.current
+    var photoUri by remember { mutableStateOf<Uri?>(null) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { tipoSeleccionado = it.toString() }
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success: Boolean ->
+        if (success) {
+            photoUri?.let { tipoSeleccionado = it.toString() }
+        }
+    }
+
+    fun createImageFile(): File {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
+    }
+
     LaunchedEffect(dispositivo, listaGrupos) {
         if (dispositivo != null && listaGrupos.isNotEmpty() && !isInitialized) {
             nombre = dispositivo!!.nombre
             tipoSeleccionado = dispositivo!!.tipo
             
-            // Buscar el grupo actual en la lista cargada
             val habitacion = viewModel.habitaciones.value.find { h -> 
                 h.dispositivos.any { d -> d.id == idDispositivo } 
             }
@@ -94,12 +124,10 @@ fun ActualizarDispositivoScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Campo ID - Solo lectura
             FormField(label = "ID", value = idDispositivo, onValueChange = {}, placeholder = "", readOnly = true)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo Grupo - Dropdown
             Box(modifier = Modifier.fillMaxWidth()) {
                 ExposedDropdownMenuBox(
                     expanded = expandedGrupo,
@@ -147,7 +175,6 @@ fun ActualizarDispositivoScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo Nombre - Editable
             FormField(
                 label = "Nombre:",
                 value = nombre,
@@ -157,7 +184,6 @@ fun ActualizarDispositivoScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Sección de Imagen
             SeccionImagenSeleccionable(
                 tipo = tipoSeleccionado,
                 onClick = { showImagePicker = true }
@@ -165,7 +191,6 @@ fun ActualizarDispositivoScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // BOTÓN ACTUALIZAR
             Button(
                 onClick = {
                     if (nombre.isNotBlank() && grupoSeleccionado != null) {
@@ -173,7 +198,7 @@ fun ActualizarDispositivoScreen(
                             id = idDispositivo,
                             nombre = nombre,
                             grupoId = grupoSeleccionado!!.id_grupo,
-                            tipo = tipoSeleccionado.name
+                            tipo = tipoSeleccionado
                         )
                         onBack()
                     }
@@ -195,6 +220,20 @@ fun ActualizarDispositivoScreen(
                 onDismiss = { showImagePicker = false },
                 onTipoSelected = {
                     tipoSeleccionado = it
+                    showImagePicker = false
+                },
+                onGalleryClick = {
+                    galleryLauncher.launch("image/*")
+                    showImagePicker = false
+                },
+                onCameraClick = {
+                    val photoFile = createImageFile()
+                    photoUri = FileProvider.getUriForFile(
+                        context,
+                        "com.example.appsigee.fileprovider",
+                        photoFile
+                    )
+                    cameraLauncher.launch(photoUri!!)
                     showImagePicker = false
                 }
             )

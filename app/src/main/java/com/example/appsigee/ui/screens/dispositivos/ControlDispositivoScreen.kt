@@ -20,9 +20,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.appsigee.domain.model.Dispositivo
 import com.example.appsigee.domain.model.TipoDispositivo
 import com.example.appsigee.ui.screens.components.BottomNavBar
+import com.example.appsigee.ui.utils.getIconForTipo
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,19 +97,28 @@ fun ControlDispositivoScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Imagen del dispositivo (Placeholder)
+            // Imagen del dispositivo
             Box(
                 modifier = Modifier
                     .size(200.dp)
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = getIconForTipo(dispositivo?.tipo ?: TipoDispositivo.TELEVISION),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    tint = Color.LightGray
-                )
+                val tipo = dispositivo?.tipo ?: ""
+                if (tipo.startsWith("content://") || tipo.startsWith("file://")) {
+                    AsyncImage(
+                        model = tipo,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Icon(
+                        imageVector = getIconForTipo(tipo),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        tint = Color.LightGray
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

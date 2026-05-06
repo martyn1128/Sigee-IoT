@@ -20,9 +20,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.appsigee.domain.model.TipoDispositivo
 import com.example.appsigee.ui.screens.components.BottomNavBar
+import com.example.appsigee.ui.utils.getIconForTipo
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +54,8 @@ fun ConfiguracionConsumoScreen(
     var isInitialized by remember { mutableStateOf(false) }
     
     val focusManager = LocalFocusManager.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     // Sincronizar estados locales con los datos de la BD al cargar (SOLO LA PRIMERA VEZ)
     LaunchedEffect(configuracion) {
@@ -85,6 +90,7 @@ fun ConfiguracionConsumoScreen(
                 }
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             BottomNavBar(currentRoute = "dispositivos", onNavigate = onNavigate)
         }
@@ -106,12 +112,21 @@ fun ConfiguracionConsumoScreen(
             Spacer(modifier = Modifier.height(16.dp))
             
             // Imagen del dispositivo
-            Icon(
-                imageVector = getIconForTipo(dispositivo?.tipo ?: TipoDispositivo.MICROONDAS),
-                contentDescription = null,
-                modifier = Modifier.size(120.dp),
-                tint = Color.LightGray
-            )
+            val tipoStr = dispositivo?.tipo ?: ""
+            if (tipoStr.startsWith("content://") || tipoStr.startsWith("file://")) {
+                AsyncImage(
+                    model = tipoStr,
+                    contentDescription = null,
+                    modifier = Modifier.size(120.dp)
+                )
+            } else {
+                Icon(
+                    imageVector = getIconForTipo(tipoStr),
+                    contentDescription = null,
+                    modifier = Modifier.size(120.dp),
+                    tint = Color.LightGray
+                )
+            }
             
             HorizontalDivider(color = Color(0xFF4CAF50), thickness = 1.dp, modifier = Modifier.padding(vertical = 16.dp))
             
@@ -122,7 +137,17 @@ fun ConfiguracionConsumoScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TextField(
                         value = limiteKwh,
-                        onValueChange = { limiteKwh = it },
+                        onValueChange = { newValue ->
+                            if (newValue.isEmpty() || newValue.all { it.isDigit() || it == '.' }) {
+                                if (newValue.count { it == '.' } <= 1) {
+                                    limiteKwh = newValue
+                                }
+                            } else {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Solo se permiten números")
+                                }
+                            }
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),
@@ -158,7 +183,15 @@ fun ConfiguracionConsumoScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TextField(
                         value = tiempoMaximo,
-                        onValueChange = { tiempoMaximo = it },
+                        onValueChange = { newValue ->
+                            if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
+                                tiempoMaximo = newValue
+                            } else {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Solo se permiten números")
+                                }
+                            }
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),

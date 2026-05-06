@@ -2,6 +2,7 @@ package com.example.appsigee.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.example.appsigee.data.local.dao.AlertaDao
 import com.example.appsigee.data.local.dao.ConfiguracionConsumoDao
 import com.example.appsigee.data.local.dao.DispositivoDao
 import com.example.appsigee.data.local.dao.GrupoDao
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
         ConsumoEntity::class,
         AlertaEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun grupoDao(): GrupoDao
     abstract fun usuarioDao(): UsuarioDao
     abstract fun configuracionConsumoDao(): ConfiguracionConsumoDao
+    abstract fun alertaDao(): AlertaDao
 
     companion object {
         @Volatile
@@ -43,6 +45,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "sigee_database"
                 )
+                    .fallbackToDestructiveMigration()
                     .addCallback(AppDatabaseCallback(scope))
                     .build()
                 INSTANCE = instance
@@ -57,7 +60,12 @@ abstract class AppDatabase : RoomDatabase() {
                 super.onCreate(db)
                 INSTANCE?.let { database ->
                     scope.launch {
-                        populateDatabase(database.usuarioDao(), database.grupoDao(), database.dispositivoDao())
+                        populateDatabase(
+                            database.usuarioDao(),
+                            database.grupoDao(),
+                            database.dispositivoDao(),
+                            database.alertaDao()
+                        )
                     }
                 }
             }
@@ -65,7 +73,8 @@ abstract class AppDatabase : RoomDatabase() {
             suspend fun populateDatabase(
                 usuarioDao: UsuarioDao,
                 grupoDao: GrupoDao,
-                dispositivoDao: DispositivoDao
+                dispositivoDao: DispositivoDao,
+                alertaDao: AlertaDao
             ) {
                 val uId = "u1"
                 usuarioDao.insertUsuario(UsuarioEntity(uId, "Admin", "admin@sigee.com", "1234", "S001"))
@@ -86,6 +95,24 @@ abstract class AppDatabase : RoomDatabase() {
                 grupoDao.insertGrupo(GrupoEntity(juanId, "Habitación Juan", uId))
                 dispositivoDao.insertDispositivo(DispositivoEntity("d7", "Laptop", "COMPUTADORA", true, 45.0, null, juanId))
                 dispositivoDao.insertDispositivo(DispositivoEntity("d8", "Nuevo Dispositivo", "NUEVO", true, 0.0, null, juanId))
+
+                // Alertas para Televisión (d1)
+                alertaDao.insertAlerta(AlertaEntity("a1", "Límite de tiempo", System.currentTimeMillis(), "ALERTA", "d1"))
+                alertaDao.insertAlerta(AlertaEntity("a2", "Límite de tiempo", System.currentTimeMillis() - 86400000, "OK", "d1"))
+                
+                // Alertas para Refrigerador (d4)
+                alertaDao.insertAlerta(AlertaEntity("a3", "Exceso de consumo", System.currentTimeMillis() - 3600000, "ALERTA", "d4"))
+                alertaDao.insertAlerta(AlertaEntity("a4", "Exceso de consumo", System.currentTimeMillis() - 172800000, "OK", "d4"))
+
+                // Alertas para Microondas (d5)
+                alertaDao.insertAlerta(AlertaEntity("a5", "Límite de tiempo", System.currentTimeMillis() - 7200000, "ALERTA", "d5"))
+                
+                // Alertas para Laptop (d7) - Más datos para probar scroll
+                alertaDao.insertAlerta(AlertaEntity("a6", "Exceso de consumo", System.currentTimeMillis() - 10800000, "ALERTA", "d7"))
+                alertaDao.insertAlerta(AlertaEntity("a7", "Límite de tiempo", System.currentTimeMillis() - 432000000, "OK", "d7"))
+                alertaDao.insertAlerta(AlertaEntity("a8", "Falla de red", System.currentTimeMillis() - 500000000, "ALERTA", "d7"))
+                alertaDao.insertAlerta(AlertaEntity("a9", "Batería baja", System.currentTimeMillis() - 600000000, "OK", "d7"))
+                alertaDao.insertAlerta(AlertaEntity("a10", "Sobrecalentamiento", System.currentTimeMillis() - 700000000, "ALERTA", "d7"))
             }
         }
     }

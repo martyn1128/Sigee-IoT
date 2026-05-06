@@ -21,8 +21,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.appsigee.domain.model.TipoDispositivo
 import com.example.appsigee.ui.screens.components.BottomNavBar
+import com.example.appsigee.ui.utils.getIconForTipo
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,12 +94,21 @@ fun HistorialConsumoScreen(
                     .padding(8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = getIconForTipo(dispositivo?.tipo ?: TipoDispositivo.LAPTOP),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    tint = Color.Gray
-                )
+                val tipoStr = dispositivo?.tipo ?: ""
+                if (tipoStr.startsWith("content://") || tipoStr.startsWith("file://")) {
+                    AsyncImage(
+                        model = tipoStr,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Icon(
+                        imageVector = getIconForTipo(tipoStr),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        tint = Color.Gray
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

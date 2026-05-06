@@ -49,7 +49,12 @@ fun DispositivosScreen(
     val context = LocalContext.current
     val app = context.applicationContext as SigeeApplication
     val repository = DispositivoRepository(app.database.dispositivoDao())
-    val factory = DispositivosViewModelFactory(repository, app.database.grupoDao(), app.database.configuracionConsumoDao())
+    val factory = DispositivosViewModelFactory(
+        repository,
+        app.database.grupoDao(),
+        app.database.configuracionConsumoDao(),
+        app.database.alertaDao()
+    )
     val viewModel: DispositivosViewModel = viewModel(factory = factory)
 
     // Obtenemos el estado del ViewModel

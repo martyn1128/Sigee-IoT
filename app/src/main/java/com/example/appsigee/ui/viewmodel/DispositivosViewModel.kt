@@ -2,6 +2,7 @@ package com.example.appsigee.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.appsigee.data.local.dao.AlertaDao
 import com.example.appsigee.data.local.dao.ConfiguracionConsumoDao
 import com.example.appsigee.data.local.dao.GrupoDao
 import com.example.appsigee.data.local.entity.ConfiguracionConsumoEntity
@@ -14,7 +15,8 @@ import kotlinx.coroutines.launch
 class DispositivosViewModel(
     private val repository: DispositivoRepository,
     private val grupoDao: GrupoDao,
-    private val configuracionDao: ConfiguracionConsumoDao
+    private val configuracionDao: ConfiguracionConsumoDao,
+    private val alertaDao: AlertaDao
 ) : ViewModel() {
 
     private val _habitaciones = MutableStateFlow<List<SeccionHabitacion>>(emptyList())
@@ -106,7 +108,7 @@ class DispositivosViewModel(
             val updatedEntity = com.example.appsigee.data.local.entity.DispositivoEntity(
                 id_dispositivo = dispositivo.id,
                 nombre = dispositivo.nombre,
-                tipo = dispositivo.tipo.name,
+                tipo = dispositivo.tipo,
                 estado = !dispositivo.estado,
                 consumo_actual = dispositivo.consumoKwh.toDouble(),
                 id_gateway = null,
@@ -136,4 +138,6 @@ class DispositivosViewModel(
             configuracionDao.deleteConfiguracionByDispositivo(idDispositivo)
         }
     }
+
+    fun getAlertas(idDispositivo: String) = alertaDao.getAlertasByDispositivo(idDispositivo)
 }
