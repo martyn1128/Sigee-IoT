@@ -144,11 +144,13 @@ fun ControlDispositivoScreen(
 
             // Estado
             Row(verticalAlignment = Alignment.CenterVertically) {
+                /*
                 Icon(
                     imageVector = Icons.Default.CheckBox,
                     contentDescription = null,
                     tint = Color(0xFF4CAF50)
                 )
+                 */
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(text = "Estado del dispositivo: ${if (dispositivo?.estado == true) "Activo" else "Inactivo"}")
             }

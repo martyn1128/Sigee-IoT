@@ -2,6 +2,7 @@ package com.example.appsigee.ui.screens.dispositivos
 
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,7 @@ import com.example.appsigee.domain.model.TipoDispositivo
 import com.example.appsigee.ui.screens.components.BottomNavBar
 import com.example.appsigee.ui.viewmodel.DispositivosViewModel
 import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -50,10 +52,33 @@ fun ActualizarDispositivoScreen(
     val context = LocalContext.current
     var photoUri by remember { mutableStateOf<Uri?>(null) }
 
+    fun copyUriToInternalStorage(uri: Uri): Uri? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val fileName = "img_${System.currentTimeMillis()}.jpg"
+            val file = File(context.filesDir, fileName)
+            val outputStream = FileOutputStream(file)
+            inputStream?.use { input ->
+                outputStream.use { output ->
+                    input.copyTo(output)
+                }
+            }
+            Uri.fromFile(file)
+        } catch (e: Exception) {
+            Log.e("ActualizarDispositivo", "Error al copiar imagen", e)
+            null
+        }
+    }
+
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { tipoSeleccionado = it.toString() }
+        uri?.let {
+            val internalUri = copyUriToInternalStorage(it)
+            if (internalUri != null) {
+                tipoSeleccionado = internalUri.toString()
+            }
+        }
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(

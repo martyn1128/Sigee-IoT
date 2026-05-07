@@ -29,7 +29,7 @@ fun FilaHabitacion(
 
         // CABECERA (Nombre sala + editar + flecha)
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -47,7 +47,7 @@ fun FilaHabitacion(
                     tint = Color.Gray
                 )
             }
-
+            /*
             // Botón/Flecha de "ver más"
             IconButton(onClick = { /* Ir a detalle sala */ }) {
                 Icon(
@@ -56,6 +56,8 @@ fun FilaHabitacion(
                     tint = Color(0xFF2E7D32)
                 )
             }
+
+             */
         }
 
         Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(horizontal = 16.dp))

@@ -216,7 +216,7 @@ fun ConfiguracionConsumoScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Text("Horas", fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(20.dp))
+                    //Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(20.dp))
                 }
             }
             

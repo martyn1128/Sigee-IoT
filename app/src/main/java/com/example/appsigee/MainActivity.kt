@@ -1,10 +1,15 @@
 package com.example.appsigee
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
@@ -44,6 +49,24 @@ class MainActivity : ComponentActivity() {
                 val context = LocalContext.current
                 val app = context.applicationContext as SigeeApplication
                 val scope = rememberCoroutineScope()
+
+                // Lanzador para solicitar múltiples permisos (Cámara y Galería)
+                val permissionLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions()
+                ) { permissions ->
+                    // El sistema maneja la persistencia de los permisos una vez aceptados
+                }
+
+                // Se ejecuta una sola vez cuando se inicia la Activity
+                LaunchedEffect(Unit) {
+                    val permissionsToRequest = mutableListOf(Manifest.permission.CAMERA)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
+                    } else {
+                        permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    }
+                    permissionLauncher.launch(permissionsToRequest.toTypedArray())
+                }
 
                 // Necesitamos el repositorio para hacer el UPDATE
                 val repository = DispositivoRepository(app.database.dispositivoDao())
